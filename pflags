@@ -1,0 +1,137 @@
+#!/bin/bash
+
+#This script allows you to easily set gcc compiler flags by commenting or uncommenting
+#individual flag lines.  The final flag string is echoed at the end of the script.
+#Simply call the script to view flags, or use the flags with gcc via command substitution.
+#
+#example 1 (view flag string):
+#
+#    flags
+#
+#
+#example 2 (use flag string):
+#
+#    gcc `flags` *.c
+#
+
+
+#Initialize flags to empty,
+FLAGS=""
+
+#Enable POSIX Threads
+FLAGS="$FLAGS -pthread"
+
+#Debugging flags
+FLAGS="$FLAGS -g3"
+
+#Optimization flags (choose one or none)
+#FLAGS="$FLAGS -Og"			#Basic optimizations (with debug support)
+FLAGS="$FLAGS -O0"			#Level 0 optimizations (no optimization; gcc's default)
+#FLAGS="$FLAGS -O1"			#level 1 optimizations
+#FLAGS="$FLAGS -O2"			#level 2 optimizations
+#FLAGS="$FLAGS -O3"			#level 3 optimizations (highest level)
+#FLAGS="$FLAGS -Ofast"			#level 3 optimizations (level 3 w faster but less accurate floating point)
+#FLAGS="$FLAGS -Os"			#Optimize for small file size instead of fast execution
+
+#GNU Compiler Warning Flag Groups
+#FLAGS="$FLAGS -Wpedantic"		#Warn of strict standards compliance
+FLAGS="$FLAGS -Wall"			#Enable all warnings for questionable code that is easy to fix
+FLAGS="$FLAGS -Wextra"			#Enables even more warnings (summarized below)
+#FLAGS="$FLAGS -Werror"			#Converts all warnings to errors: forces you to fix warnings
+
+#GNU Compiler Individual Warning Flags
+FLAGS="$FLAGS -Wcast-qual"		#Warn about removing or adding qualifiers in a cast (such as const)
+FLAGS="$FLAGS -Wdisabled-optimization"	#warns if gcc can't optimize a code
+FLAGS="$FLAGS -Wformat=2"		#Enables printf formatting warnings
+FLAGS="$FLAGS -Wlogical-op"		#Warns about likely mix-ups of logical and bitwise ops
+FLAGS="$FLAGS -Wmissing-include-dirs"	#Warn if user supplied include directory doesn't exist
+FLAGS="$FLAGS -Wfloat-equal"		#warns if you use a float equality operation; can disable if careful
+FLAGS="$FLAGS -Wredundant-decls"	#Warns if multiple declarations in same scope
+FLAGS="$FLAGS -Wshadow"			#Warns if a variable masks a variable in an outer scope
+FLAGS="$FLAGS -Wsign-conversion"	#Warns if you assign a signed value to unsigned variable
+FLAGS="$FLAGS -Wstrict-overflow=2"	#Warns about signed overflow if that is undefined; maybe reduce to 4
+FLAGS="$FLAGS -Wswitch-default"		#Warn if your switch statement doesn't have a default case
+FLAGS="$FLAGS -Wundef"			#Warn if undefined identifier evaluated in an #if directive
+FLAGS="$FLAGS -Waggregate-return"	#Warn if you return a structure or array (should return a pointer?)
+FLAGS="$FLAGS -Wmissing-declarations"	#Similar to above, but different in a way I don't fully understand
+FLAGS="$FLAGS -Wcast-align"		#ONLY meaningful for non-x86-64 systems (triggered by certain pointer cast)
+#FLAGS="$FLAGS -Wbad-function-cast"	#Warn if function call's return doesn't match context
+FLAGS="$FLAGS -Wno-shift-negative-value" #suppress warning for left shifting signed data on x86-64
+#FLAGS="$FLAGS -Wno-unused"		#suppresses warnings of unused variables (I don't want to supress this)
+FLAGS="$FLAGS -Wno-unused-parameter"	#suppresses warnings of unused parameters (common; I do want this)
+#FLAGS="$FLAGS -Wtraditional"		#Would generate too many warnings
+#FLAGS="$FLAGS -Wtraditional-conversion"#Even more warnings from traditional
+#FLAGS="$FLAGS -Wno-trigraphcs"		#suppress trigraph warnings; probably won't encounter trigraph so ignore
+
+#C Only Individual Warning Flags
+FLAGS="$FLAGS -Wmissing-prototypes"		#Warn if function prototypes are missing (C only)
+FLAGS="$FLAGS -Wstrict-prototypes"		#Function declared with no argument types
+FLAGS="$FLAGS -Wnested-externs"			#Warn if extern is encountered in a function (?)
+FLAGS="$FLAGS -Wdeclaration-after-statement"	#A GCC only feature not allowed in standard C
+FLAGS="$FLAGS -Wold-style-definition"		#Warn if old style function definition is used (is needed in C?)
+
+#Echo the selected FLAGS to stdout
+echo $FLAGS
+
+
+
+#NOTES:
+
+#Included in -Wall
+# -Waddress   			#Warn about suspicious use of memory addresses
+# -Warray-bounds=1 (only with -O2) #Warns about array access always out of bounds
+# -Wbool-compare  		#W: comparing booleans to non-bools (n>1)==2 is always T
+# -Wchar-subscripts  		#W: char used as subscript (char often unsigned)
+# -Wcomment  			#Warn if /* */ contains /* or \n in #
+# -Wenum-compare 		#something about enumerated types
+# -Wformat   			#Wformat=1 by default; raised to 2 in custom flags above
+# -Wimplicit			#Enables both Wimplicits below
+# -Wimplicit-int		#Declaration doesnt specify a type (implicitly set to int)
+# -Wimplicit-function-declaration #Function used before being declared
+# -Wlogical-not-parentheses	#W: example int a; if (!a > 1) ...
+# -Wmain			#Warn if main isn't defined properly
+# -Wmaybe-uninitialized 	#Warn if some variable is possibly used without init
+# -Wmemset-transposed-args 	#Warn about suspicious calls to memset
+# -Wmisleading-indentation	#When singular statement conditional not indented properly
+# -Wmissing-braces		#bad: int a[2][2]={0,1,2,3} good: int b[2][2]={{0,1},{2,3}} 
+# -Wnonnull			#Passing null pointer for args marked as nonnull
+# -Wnonnull-compare  		#Comparing a nonnull var with null in a function
+# -Wopenmp-simd 		#Obscure
+# -Wparentheses  		#Warns of suspicious missing parentheses
+# -Wpointer-sign  		#Implicit cast signed to unsigned via pointers
+# -Wreturn-type  		#Missing return type (defaults to int) or missing return (non-void)
+# -Wsequence-point  		#Warn of code with possible undefined semantics
+# -Wsizeof-pointer-memaccess 	#Warns about uses of sizeof that are likely to be an error
+# -Wstrict-aliasing  		#Something about optimizations
+# -Wstrict-overflow=1  		#upgraded to 2 above
+# -Wswitch  			#Switch statement warnings
+# -Wtautological-compare  	#Comparison with itself
+# -Wtrigraphs  			#Warn if a trigraph is encountered (because trigraphs are ignored)
+# -Wuninitialized  		#Obscure
+# -Wunknown-pragmas  		#Warn about pragmas (ignores system headers)
+# -Wvolatile-register-var	#Warn if volatile and register keywords combined
+# -Wunused-function  		#Obvious
+# -Wunused-label     		#Obvious
+# -Wunused-value     		#Obvious
+# -Wunused-variable  		#Obvious
+# -Wsign-compare		#Enabled by -Wall only in C++ (has function in both C and C++)
+# -Wc++11-compat -Wc++14-compat	#C++ only
+# -Winit-self			#C++ only
+# -Wnarrowing			#C++ only
+# -Wreorder   			#C++ only
+
+
+#Included in -Wextra
+# -Wsign-compare		#Enabled by -Wextra only in C (has function in both C and C++)
+# -Wmissing-parameter-type	#C only: function declared with no arg type (K&R style?)
+# -Wold-style-declaration	#C only:  
+# -Wclobbered  			#Obscure
+# -Wempty-body	  		#Empty conditional body
+# -Wignored-qualifiers 		#Warn if useless qualifier such as const used of function return
+# -Wmissing-field-initializers 	#disallow implicit field initializing in structures
+# -Woverride-init  		#warn in some obscure case of array initializing
+# -Wtype-limits  		#W: comparison always true or false due to data type range limit
+# -Wuninitialized  		#W: 
+# -Wshift-negative-value 	#W: warn if left shifting a negative value (useful for non-x86-64)
+# -Wunused-parameter		#
+# -Wunused-but-set-parameter	#
